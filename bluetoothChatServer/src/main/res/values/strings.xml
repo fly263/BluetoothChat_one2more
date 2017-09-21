@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">BTChatServer</string>
+
+    <!-- Options Menu -->
+    <string name="discoverable">Make discoverable</string>
+
+    <string name="blue_is_discoverable">蓝牙已处于可发现状态</string>
+    <string name="intro_message">这个是服务端，部分机型需要点击右上角菜单，客户端才能找到该蓝牙设备</string>
+</resources>

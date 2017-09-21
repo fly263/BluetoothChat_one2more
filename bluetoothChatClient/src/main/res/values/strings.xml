@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">BTChatClient</string>
+
+    <!--  DeviceListActivity -->
+    <string name="scanning">scanning for devices...</string>
+    <string name="select_device">select a device to connect</string>
+    <string name="none_paired">No devices have been paired</string>
+    <string name="none_found">No devices found</string>
+    <string name="title_paired_devices">Paired Devices</string>
+    <string name="title_other_devices">Other Available Devices</string>
+    <string name="button_scan">Scan for devices</string>
+
+    <!-- Options Menu -->
+    <string name="secure_connect">Connect a device - Secure</string>
+    <string name="insecure_connect">Connect a device - Insecure</string>
+    
+    <string name="intro_message">这个是客户端，需要与另外一台手机（服务端）配合使用，使用步骤：\n
+    1、打开蓝牙\n
+    2、点击右上角菜单扫描并连接到服务端(Secure方式需要先配对，Insecure则不需要)\n
+    3、发送消息</string>
+</resources>
