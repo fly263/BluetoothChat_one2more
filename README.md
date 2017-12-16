@@ -17,17 +17,17 @@
 compileSdkVersion、buildToolsVersion等参数如需修改，请打开根项目的build.gradle修改
 ``` groovy
 ext {
-    compileSdkVersion = 26
-    buildToolsVersion = "26.0.1"
+    compileSdkVersion = 27
+    buildToolsVersion = "27.0.2"
     minSdkVersion = 18
     targetSdkVersion = 26
-    support_library_version = "26.1.0"
+    supportLibraryVersion = "26.1.0"
 }
 ```
 
 # bluetoothChatClient
 客户端APP，与服务端连接后，可以给服务端发消息
-> Android 6.0以上扫描蓝牙设备需要定位权限，请在手机的权限管理中手动打开定位权限（后期将完成自动申请权限的功能）
+> Android 6.0以上扫描蓝牙设备需要定位权限，弹出权限请求时请允许，否则搜索不到蓝牙设备
 
 # bluetoothChatServer
 服务端APP，等待客户端连接

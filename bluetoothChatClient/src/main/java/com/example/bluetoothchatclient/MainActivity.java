@@ -17,9 +17,12 @@ public class MainActivity extends AppCompatActivity {
         getOverflowMenu();
     }
 
-    //【已解决】Android中ActionBar中不显示overflow（就是三个点的那个按钮） – 在路上
-    // https://www.crifan.com/android_actionbar_three_dot_overflow_not_show/
-    //force to show overflow menu in actionbar
+    /**
+     * force to show overflow menu in actionbar
+     *
+     *【已解决】Android中ActionBar中不显示overflow（就是三个点的那个按钮） – 在路上
+     * https://www.crifan.com/android_actionbar_three_dot_overflow_not_show/
+     */
     private void getOverflowMenu() {
         try {
             ViewConfiguration config = ViewConfiguration.get(this);
