@@ -58,7 +58,6 @@ public class BluetoothChatServerService {
     private AcceptThread mSecureAcceptThread;
     private AcceptThread mInsecureAcceptThread;
     private Context mContext;
-    //private ConnectedThread mConnectedThread;
     private int mState;
     private int mNewState;
 
@@ -105,6 +104,11 @@ public class BluetoothChatServerService {
     public synchronized void start() {
         Log.d(TAG, "start");
 
+        //关闭所有客户端线程
+        for (ConnectedThread connectedThread : clientConnectedThread.values()) {
+            connectedThread.cancel();
+        }
+        clientConnectedThread.clear();
         // Start the thread to listen on a BluetoothServerSocket
         if (mSecureAcceptThread == null) {
             mSecureAcceptThread = new AcceptThread(true);
@@ -292,7 +296,6 @@ public class BluetoothChatServerService {
                 }
             }
             Log.i(TAG, "END mAcceptThread, socket Type: " + mSocketType);
-
         }
 
         public void cancel() {

@@ -23,10 +23,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -37,12 +35,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.alibaba.fastjson.JSON;
 import com.example.bluetoothchatcore.Constants;
@@ -105,17 +107,19 @@ public class BluetoothChatFragment extends Fragment {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // If the adapter is null, then Bluetooth is not supported
-        if (mBluetoothAdapter == null) {
-            FragmentActivity activity = getActivity();
+        FragmentActivity activity = getActivity();
+        if (mBluetoothAdapter == null && activity != null) {
             Toast.makeText(activity, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             activity.finish();
         }
     }
 
-
     @Override
     public void onStart() {
         super.onStart();
+        if (mBluetoothAdapter == null) {
+            return;
+        }
         // If BT is not on, request that it be enabled.
         // setupChat() will then be called during onActivityResult
         if (!mBluetoothAdapter.isEnabled()) {
@@ -159,21 +163,18 @@ public class BluetoothChatFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        mConversationView = (ListView) view.findViewById(R.id.in);
-        mConversationView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MessageBean messageBean = mConversationArrayAdapter.getItem(position);
-                if (getLocalBlueDeviceAddress().equals(messageBean.getDeviceAddress())) {
-                    Toast.makeText(getContext(), "不能和自己聊天", Toast.LENGTH_SHORT).show();
-                } else {
-                    mChatClientAddress = messageBean.getDeviceAddress();
-                    Toast.makeText(getContext(), String.format("选择和%s聊天", messageBean.getDeviceName()), Toast.LENGTH_SHORT).show();
-                }
+        mConversationView = view.findViewById(R.id.in);
+        mConversationView.setOnItemClickListener((parent, view1, position, id) -> {
+            MessageBean messageBean = mConversationArrayAdapter.getItem(position);
+            if (messageBean.getDeviceAddress().equals(getLocalBlueDeviceAddress())) {
+                Toast.makeText(getContext(), "不能和自己聊天", Toast.LENGTH_SHORT).show();
+            } else {
+                mChatClientAddress = messageBean.getDeviceAddress();
+                Toast.makeText(getContext(), String.format("选择和%s聊天", messageBean.getDeviceName()), Toast.LENGTH_SHORT).show();
             }
         });
-        mOutEditText = (EditText) view.findViewById(R.id.edit_text_out);
-        mSendButton = (Button) view.findViewById(R.id.button_send);
+        mOutEditText = view.findViewById(R.id.edit_text_out);
+        mSendButton = view.findViewById(R.id.button_send);
     }
 
     /**
@@ -183,7 +184,11 @@ public class BluetoothChatFragment extends Fragment {
         Log.d(TAG, "setupChat()");
 
         // Initialize the array adapter for the conversation thread
-        mConversationArrayAdapter = new ConversationArrayAdapter(getActivity(), R.layout.message, new ArrayList<MessageBean>());
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        mConversationArrayAdapter = new ConversationArrayAdapter(activity, R.layout.message, new ArrayList<>());
 
         mConversationView.setAdapter(mConversationArrayAdapter);
 
@@ -196,7 +201,7 @@ public class BluetoothChatFragment extends Fragment {
                 // Send a message using content of the edit text widget
                 View view = getView();
                 if (null != view) {
-                    TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
+                    TextView textView = view.findViewById(R.id.edit_text_out);
                     String message = textView.getText().toString();
                     sendMessage(message);
                 }
@@ -204,10 +209,10 @@ public class BluetoothChatFragment extends Fragment {
         });
 
         // Initialize the BluetoothChatServerService to perform bluetooth connections
-        mChatService = new BluetoothChatServerService(getActivity(), mHandler);
+        mChatService = new BluetoothChatServerService(activity, mHandler);
 
         // Initialize the buffer for outgoing messages
-        mOutStringBuffer = new StringBuffer("");
+        mOutStringBuffer = new StringBuffer();
     }
 
     /**
@@ -311,7 +316,7 @@ public class BluetoothChatFragment extends Fragment {
     /**
      * The Handler that gets information back from the BluetoothChatServerService
      */
-    private final Handler mHandler = new Handler() {
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             FragmentActivity activity = getActivity();
@@ -385,15 +390,18 @@ public class BluetoothChatFragment extends Fragment {
                 } else {
                     // User did not enable Bluetooth or an error occurred
                     Log.d(TAG, "BT not enabled");
-                    Toast.makeText(getActivity(), R.string.bt_not_enabled_leaving,
-                            Toast.LENGTH_SHORT).show();
-                    getActivity().finish();
+                    FragmentActivity activity = getActivity();
+                    if (activity != null) {
+                        Toast.makeText(activity, R.string.bt_not_enabled_leaving,
+                                Toast.LENGTH_SHORT).show();
+                        activity.finish();
+                    }
                 }
         }
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.bluetooth_chat, menu);
     }
 

@@ -16,23 +16,16 @@
 
 package com.example.bluetoothchatclient;
 
-import android.Manifest;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -47,6 +40,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.alibaba.fastjson.JSON;
 import com.example.bluetoothchatcore.Constants;
@@ -66,7 +64,6 @@ public class BluetoothChatFragment extends Fragment {
     private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
     private static final int REQUEST_ENABLE_BT = 3;
-    private static final int REQUEST_LOCATION_PERMISSION_CODE = 4;
 
     // Layout Views
     private ListView mConversationView;
@@ -106,17 +103,19 @@ public class BluetoothChatFragment extends Fragment {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // If the adapter is null, then Bluetooth is not supported
-        if (mBluetoothAdapter == null) {
-            FragmentActivity activity = getActivity();
+        FragmentActivity activity = getActivity();
+        if (mBluetoothAdapter == null && activity != null) {
             Toast.makeText(activity, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             activity.finish();
         }
     }
 
-
     @Override
     public void onStart() {
         super.onStart();
+        if (mBluetoothAdapter == null) {
+            return;
+        }
         // If BT is not on, request that it be enabled.
         // setupChat() will then be called during onActivityResult
         if (!mBluetoothAdapter.isEnabled()) {
@@ -160,9 +159,9 @@ public class BluetoothChatFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        mConversationView = (ListView) view.findViewById(R.id.in);
-        mOutEditText = (EditText) view.findViewById(R.id.edit_text_out);
-        mSendButton = (Button) view.findViewById(R.id.button_send);
+        mConversationView = view.findViewById(R.id.in);
+        mOutEditText = view.findViewById(R.id.edit_text_out);
+        mSendButton = view.findViewById(R.id.button_send);
     }
 
     /**
@@ -172,7 +171,11 @@ public class BluetoothChatFragment extends Fragment {
         Log.d(TAG, "setupChat()");
 
         // Initialize the array adapter for the conversation thread
-        mConversationArrayAdapter = new ConversationArrayAdapter(getActivity(), R.layout.message, new ArrayList<MessageBean>());
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        mConversationArrayAdapter = new ConversationArrayAdapter(activity, R.layout.message, new ArrayList<>());
 
         mConversationView.setAdapter(mConversationArrayAdapter);
 
@@ -185,7 +188,7 @@ public class BluetoothChatFragment extends Fragment {
                 // Send a message using content of the edit text widget
                 View view = getView();
                 if (null != view) {
-                    TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
+                    TextView textView = view.findViewById(R.id.edit_text_out);
                     String message = textView.getText().toString();
                     sendMessage(message);
                 }
@@ -193,10 +196,10 @@ public class BluetoothChatFragment extends Fragment {
         });
 
         // Initialize the BluetoothChatClientService to perform bluetooth connections
-        mChatService = new BluetoothChatClientService(getActivity(), mHandler);
+        mChatService = new BluetoothChatClientService(activity, mHandler);
 
         // Initialize the buffer for outgoing messages
-        mOutStringBuffer = new StringBuffer("");
+        mOutStringBuffer = new StringBuffer();
     }
 
     /**
@@ -287,7 +290,7 @@ public class BluetoothChatFragment extends Fragment {
     /**
      * The Handler that gets information back from the BluetoothChatClientService
      */
-    private final Handler mHandler = new Handler() {
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             FragmentActivity activity = getActivity();
@@ -367,9 +370,12 @@ public class BluetoothChatFragment extends Fragment {
                 } else {
                     // User did not enable Bluetooth or an error occurred
                     Log.d(TAG, "BT not enabled");
-                    Toast.makeText(getActivity(), R.string.bt_not_enabled_leaving,
-                            Toast.LENGTH_SHORT).show();
-                    getActivity().finish();
+                    FragmentActivity activity = getActivity();
+                    if (activity != null) {
+                        Toast.makeText(activity, R.string.bt_not_enabled_leaving,
+                                Toast.LENGTH_SHORT).show();
+                        activity.finish();
+                    }
                 }
         }
     }
@@ -382,8 +388,11 @@ public class BluetoothChatFragment extends Fragment {
      */
     private void connectDevice(Intent data, boolean secure) {
         // Get the device MAC address
-        String address = data.getExtras()
-                .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+        Bundle extras = data.getExtras();
+        if (extras == null) {
+            return;
+        }
+        String address = extras.getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         // Attempt to connect to the device
@@ -401,34 +410,12 @@ public class BluetoothChatFragment extends Fragment {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_LOCATION_PERMISSION_CODE) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getActivity(), "定位权限被拒绝，请手动开启！", Toast.LENGTH_SHORT).show();
-
-                //打开系统的应用信息页面
-                Intent intent = new Intent();
-                intent.setAction(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.parse("package:" + this.getActivity().getPackageName()));
-                startActivity(intent);
-            }
-        }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.bluetooth_chat, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                    REQUEST_LOCATION_PERMISSION_CODE);
-            return false;
-        }
-
         switch (item.getItemId()) {
             case R.id.secure_connect_scan: {
                 // Launch the DeviceListActivity to see devices and do scan

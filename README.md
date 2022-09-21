@@ -1,5 +1,5 @@
 # BluetoothChat_one2more
-一对多蓝牙连接示例，基于[Google BluetoothChat](https://github.com/googlesamples/android-BluetoothChat)修改，实现一对多聊天（一个服务端、多个客户端），类似聊天室。
+一对多蓝牙连接示例，基于[Google BluetoothChat](https://github.com/android/connectivity-samples/tree/main/BluetoothChat)修改，实现一对多聊天（一个服务端、多个客户端），类似聊天室。
 
 ##### 主要功能：
 1. 客户端的发出的消息所有终端都能收到(由服务端转发)
@@ -17,17 +17,16 @@
 compileSdkVersion、buildToolsVersion等参数如需修改，请打开根项目的build.gradle修改
 ``` groovy
 ext {
-    compileSdkVersion = 27
-    buildToolsVersion = "27.0.2"
+    compileSdkVersion = 32
+    buildToolsVersion = "33.0.0"
     minSdkVersion = 18
-    targetSdkVersion = 26
-    supportLibraryVersion = "26.1.0"
+    targetSdkVersion = 31
 }
 ```
 
 # bluetoothChatClient
 客户端APP，与服务端连接后，可以给服务端发消息
-> Android 6.0以上扫描蓝牙设备需要定位权限，弹出权限请求时请允许，否则搜索不到蓝牙设备
+> Android 6.0-11扫描蓝牙设备需要定位权限，弹出权限请求时请允许，否则搜索不到蓝牙设备
 
 # bluetoothChatServer
 服务端APP，等待客户端连接
@@ -46,3 +45,17 @@ bluetoothChatClient、bluetoothChatServer两个APP共用的部分
 
 #### server
 ![server](captures/server.png)
+
+# 已知问题
+源码中getLocalBlueDeviceAddress()已无法获取本机设备的蓝牙地址，不影响其他功能
+```
+    private String getLocalBlueDeviceAddress() {
+        //Android 6.0以上使用getAddress()获取不到蓝牙地址，返回的是02:00:00:00:00:00
+        if (Build.VERSION.SDK_INT < 23) {
+            return mBluetoothAdapter.getAddress();
+        } else {
+            //Android 6.0之前的版本也可以使用该方法
+            return android.provider.Settings.Secure.getString(getContext().getContentResolver(), "bluetooth_address");
+        }
+    }
+```
