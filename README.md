@@ -14,13 +14,14 @@
 4. 由原来只支持一个客户端与服务器连接，改为支持多个客户端连接
 
 ##### 项目配置
-compileSdkVersion、buildToolsVersion等参数如需修改，请打开根项目的build.gradle修改
+compileSdkVersion、minSdkVersion等参数如需修改，请打开根项目的build.gradle修改
 ``` groovy
 ext {
-    compileSdkVersion = 32
-    buildToolsVersion = "33.0.0"
+    compileSdkVersion = 33
     minSdkVersion = 18
     targetSdkVersion = 31
+    appcompatVersion = "1.5.1"
+    constraintLayoutVersion = "2.1.4"
 }
 ```
 
