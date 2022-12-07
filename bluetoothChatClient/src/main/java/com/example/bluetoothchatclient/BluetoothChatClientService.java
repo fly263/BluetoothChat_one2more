@@ -16,6 +16,7 @@
 
 package com.example.bluetoothchatclient;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -37,6 +38,7 @@ import java.io.OutputStream;
  * incoming connections, a thread for connecting with a device, and a
  * thread for performing data transmissions when connected.
  */
+@SuppressLint("MissingPermission")
 public class BluetoothChatClientService {
     // Debugging
     private static final String TAG = "BluetoothChatService";

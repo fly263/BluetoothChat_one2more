@@ -17,6 +17,7 @@
 package com.example.bluetoothchatclient;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -50,6 +51,7 @@ import java.util.Set;
  * by the user, the MAC address of the device is sent back to the parent
  * Activity in the result Intent.
  */
+@SuppressLint("MissingPermission")
 public class DeviceListActivity extends Activity {
 
     /**

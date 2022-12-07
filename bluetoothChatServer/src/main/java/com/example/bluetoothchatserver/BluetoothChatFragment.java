@@ -16,6 +16,7 @@
 
 package com.example.bluetoothchatserver;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -56,6 +57,7 @@ import java.util.ArrayList;
 /**
  * This fragment controls Bluetooth to communicate with other devices.
  */
+@SuppressLint("MissingPermission")
 public class BluetoothChatFragment extends Fragment {
 
     private static final String TAG = "BluetoothChatFragment";
