@@ -390,11 +390,10 @@ public class BluetoothChatFragment extends Fragment {
      */
     private void connectDevice(Intent data, boolean secure) {
         // Get the device MAC address
-        Bundle extras = data.getExtras();
-        if (extras == null) {
+        if (data == null) {
             return;
         }
-        String address = extras.getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+        String address = data.getStringExtra(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         // Attempt to connect to the device

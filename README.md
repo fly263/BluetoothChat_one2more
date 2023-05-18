@@ -19,9 +19,12 @@ compileSdkVersion、minSdkVersion等参数如需修改，请打开根项目的bu
 ext {
     compileSdkVersion = 33
     minSdkVersion = 18
-    targetSdkVersion = 31
-    appcompatVersion = "1.5.1"
+    targetSdkVersion = 33
+    appcompatVersion = "1.6.1"
     constraintLayoutVersion = "2.1.4"
+    ext_junit   = "4.13.2"
+    junit   = "1.1.5"
+    espresso    = "3.5.1"
 }
 ```
 
@@ -48,7 +51,7 @@ bluetoothChatClient、bluetoothChatServer两个APP共用的部分
 ![server](captures/server.png)
 
 # 已知问题
-源码中getLocalBlueDeviceAddress()已无法获取本机设备的蓝牙地址，不影响其他功能
+因Android限制，在某些版本中，源码中getLocalBlueDeviceAddress()已无法获取本机设备的蓝牙地址，所以服务端无法显示自己的蓝牙地址，客户端无法显示服务端的蓝牙地址，将显示为null，不影响其他功能
 ```
     private String getLocalBlueDeviceAddress() {
         //Android 6.0以上使用getAddress()获取不到蓝牙地址，返回的是02:00:00:00:00:00
