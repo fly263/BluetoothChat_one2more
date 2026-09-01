@@ -1,8 +1,10 @@
+
+
 # BluetoothChat_one2more
 一对多蓝牙连接示例，基于[Google BluetoothChat](https://github.com/android/connectivity-samples/tree/main/BluetoothChat)修改，实现一对多聊天（一个服务端、多个客户端），类似聊天室。
 
 ##### 主要功能：
-1. 客户端的发出的消息所有终端都能收到(由服务端转发)
+1. 客户端发出的消息所有终端都能收到(由服务端转发)
 2. 客户端之间不能私聊
 3. 服务端可以与选定的客户端私聊
 4. 服务端可以踢出某个客户端（发送kill消息）
